@@ -2,7 +2,7 @@
  * @Author: Xavier Yin 
  * @Date: 2018-08-09 18:08:26 
  * @Last Modified by: Xavier Yin
- * @Last Modified time: 2018-08-10 14:12:19
+ * @Last Modified time: 2018-08-10 16:23:38
  */
 
 import { queue, safeTopic, isEmptyArray } from "./utils";
@@ -50,7 +50,7 @@ function unsubscribeApi(subscriber, topic, callback, options) {
     let { topic: t, callback: cb, ns: n, ctx: c } = subscribing;
     if (
       (topic == void 0 || topic === t) &&
-      (callback == void 0 || callback === t) &&
+      (callback == void 0 || callback === cb) &&
       (ns == void 0 || ns === n) &&
       (!ctx || ctx === c)
     ) {

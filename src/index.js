@@ -2,7 +2,7 @@
  * @Author: Xavier Yin 
  * @Date: 2018-08-10 10:58:35 
  * @Last Modified by: Xavier Yin
- * @Last Modified time: 2018-08-10 14:23:28
+ * @Last Modified time: 2018-08-10 16:24:02
  */
 import subscribe from "./subscribe";
 import unsubscribe, { unsubscribeByIdInQueue } from "./unsubscribe";
@@ -26,7 +26,7 @@ const pubsub = {
       let { topic: t, callback: cb, ns: n, ctx: c } = subscribing;
       if (
         (topic == void 0 || topic === t) &&
-        (callback == void 0 || callback === t) &&
+        (callback == void 0 || callback === cb) &&
         (ns == void 0 || ns === n) &&
         (!ctx || ctx === c)
       ) {
