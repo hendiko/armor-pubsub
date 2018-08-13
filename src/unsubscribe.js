@@ -2,7 +2,7 @@
  * @Author: Xavier Yin 
  * @Date: 2018-08-09 18:08:26 
  * @Last Modified by: Xavier Yin
- * @Last Modified time: 2018-08-10 16:23:38
+ * @Last Modified time: 2018-08-10 18:20:05
  */
 
 import { queue, safeTopic, isEmptyArray } from "./utils";
@@ -39,7 +39,7 @@ function removeSubscribingFromSubscriber(subscribing) {
   }
 }
 
-function unsubscribeApi(subscriber, topic, callback, options) {
+function unsubscribeApi(subscriber, topic, callback, options, done) {
   let pubsub = subscriber._armorPubSub;
   if (isEmptyArray(pubsub)) return;
   let { ns, ctx } = options || {};
@@ -60,21 +60,26 @@ function unsubscribeApi(subscriber, topic, callback, options) {
   for (i = 0; i < toRemove.length; i++) {
     unsubscribeById(toRemove[i]["id"]);
   }
+  done();
 }
 
-export function unsubscribeById(id) {
+export function unsubscribeById(id, done) {
   let subscribing = book.get(id);
   if (subscribing) {
     book.remove(id);
     removeSubscribingFromRegistry(subscribing);
     removeSubscribingFromSubscriber(subscribing);
   }
+  if (done) done();
 }
 
 export function unsubscribeByIdInQueue(id) {
-  queue({ fn: unsubscribeById, args: [id] });
+  return queue({ fn: unsubscribeById, args: [id] });
 }
 
 export default function unsubscribe(subscriber, topic, callback, options) {
-  queue({ fn: unsubscribeApi, args: [subscriber, topic, callback, options] });
+  return queue({
+    fn: unsubscribeApi,
+    args: [subscriber, topic, callback, options]
+  });
 }

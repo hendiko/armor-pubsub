@@ -2,7 +2,7 @@
  * @Author: Xavier Yin 
  * @Date: 2018-08-10 10:58:35 
  * @Last Modified by: Xavier Yin
- * @Last Modified time: 2018-08-10 16:24:02
+ * @Last Modified time: 2018-08-13 11:45:40
  */
 import subscribe from "./subscribe";
 import unsubscribe, { unsubscribeByIdInQueue } from "./unsubscribe";
@@ -41,7 +41,7 @@ const pubsub = {
     let { ns, ctx } = options || {};
     let id = subscribe(this, topic, callback, { ns, ctx });
     return function() {
-      unsubscribeByIdInQueue(id);
+      return unsubscribeByIdInQueue(id);
     };
   },
 
@@ -50,18 +50,16 @@ const pubsub = {
     let { ns, ctx } = options || {};
     let id = subscribe(this, topic, callback, { ns, ctx, once: true });
     return function() {
-      unsubscribeByIdInQueue(id);
+      return unsubscribeByIdInQueue(id);
     };
   },
 
   pub(topic, content, options) {
-    publish(topic, content, options);
-    return this;
+    return publish(topic, content, options);
   },
 
   unsub(topic, callback, options) {
-    unsubscribe(this, topic, callback, options);
-    return this;
+    return unsubscribe(this, topic, callback, options);
   }
 };
 

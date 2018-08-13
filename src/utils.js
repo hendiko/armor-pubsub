@@ -1,8 +1,10 @@
+import { resolve } from "path";
+
 /*
  * @Author: Xavier Yin 
  * @Date: 2018-08-09 15:09:07 
  * @Last Modified by: Xavier Yin
- * @Last Modified time: 2018-08-10 16:01:30
+ * @Last Modified time: 2018-08-13 14:28:09
  */
 
 /**
@@ -51,16 +53,48 @@ export const queue = (function() {
   const _queue = [];
   let isConsuming = false;
 
+  const counter = {
+    ongoing: 0,
+    promise: null
+  };
+
+  function done(resolve) {
+    counter.ongoing--;
+    if (_queue.length === 0 && counter.ongoing === 0) {
+      resolve();
+    }
+  }
+
+  function reset() {
+    isConsuming = false;
+    counter.ongoing = 0;
+  }
+
   return function(task) {
     _queue.push(task);
-    if (isConsuming) return;
+    if (isConsuming) return counter.promise;
+    let resolve, reject;
+    counter.promise = new Promise((rs, rj) => {
+      resolve = rs;
+      reject = rj;
+    });
     isConsuming = true;
     task = _queue.shift();
-    while (task) {
-      task.fn(...task.args);
-      task = _queue.shift();
+    let willBeDone = function() {
+      done(resolve);
+    };
+    try {
+      while (task) {
+        counter.ongoing++;
+        task.fn(...task.args, willBeDone);
+        task = _queue.shift();
+      }
+      reset();
+    } catch (e) {
+      reset();
+      reject(e);
     }
-    isConsuming = false;
+    return counter.promise;
   };
 })();
 
