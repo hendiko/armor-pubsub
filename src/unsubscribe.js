@@ -2,10 +2,10 @@
  * @Author: Xavier Yin 
  * @Date: 2018-08-09 18:08:26 
  * @Last Modified by: Xavier Yin
- * @Last Modified time: 2018-08-10 18:20:05
+ * @Last Modified time: 2018-08-13 16:12:33
  */
 
-import { queue, safeTopic, isEmptyArray } from "./utils";
+import { queue, isEmptyArray } from "./utils";
 import { book, getRegistry, removeRegistry } from "./registry";
 
 function removeSubscribingFromRegistry(subscribing) {
@@ -39,7 +39,7 @@ function removeSubscribingFromSubscriber(subscribing) {
   }
 }
 
-function unsubscribeApi(subscriber, topic, callback, options, done) {
+function unsubscribeApi(subscriber, topic, callback, options) {
   let pubsub = subscriber._armorPubSub;
   if (isEmptyArray(pubsub)) return;
   let { ns, ctx } = options || {};
@@ -60,17 +60,15 @@ function unsubscribeApi(subscriber, topic, callback, options, done) {
   for (i = 0; i < toRemove.length; i++) {
     unsubscribeById(toRemove[i]["id"]);
   }
-  done();
 }
 
-export function unsubscribeById(id, done) {
+export function unsubscribeById(id) {
   let subscribing = book.get(id);
   if (subscribing) {
     book.remove(id);
     removeSubscribingFromRegistry(subscribing);
     removeSubscribingFromSubscriber(subscribing);
   }
-  if (done) done();
 }
 
 export function unsubscribeByIdInQueue(id) {

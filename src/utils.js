@@ -1,10 +1,8 @@
-import { resolve } from "path";
-
 /*
  * @Author: Xavier Yin 
  * @Date: 2018-08-09 15:09:07 
  * @Last Modified by: Xavier Yin
- * @Last Modified time: 2018-08-13 14:28:09
+ * @Last Modified time: 2018-08-14 10:39:53
  */
 
 /**
@@ -32,6 +30,7 @@ export function safeNs(ns) {
   return ns == void 0 ? "default" : ns;
 }
 
+// 强制转换合法主题
 export function safeTopic(topic) {
   return topic == void 0 ? "" : topic;
 }
@@ -52,49 +51,30 @@ export function isFunction(obj) {
 export const queue = (function() {
   const _queue = [];
   let isConsuming = false;
-
-  const counter = {
-    ongoing: 0,
-    promise: null
-  };
-
-  function done(resolve) {
-    counter.ongoing--;
-    if (_queue.length === 0 && counter.ongoing === 0) {
-      resolve();
-    }
-  }
-
-  function reset() {
-    isConsuming = false;
-    counter.ongoing = 0;
-  }
+  let promise;
 
   return function(task) {
     _queue.push(task);
-    if (isConsuming) return counter.promise;
+    if (isConsuming) return promise;
     let resolve, reject;
-    counter.promise = new Promise((rs, rj) => {
+    promise = new Promise((rs, rj) => {
       resolve = rs;
       reject = rj;
     });
     isConsuming = true;
     task = _queue.shift();
-    let willBeDone = function() {
-      done(resolve);
-    };
     try {
       while (task) {
-        counter.ongoing++;
-        task.fn(...task.args, willBeDone);
+        task.fn(...task.args);
         task = _queue.shift();
       }
-      reset();
+      isConsuming = false;
+      resolve();
     } catch (e) {
-      reset();
+      isConsuming = false;
       reject(e);
     }
-    return counter.promise;
+    return promise;
   };
 })();
 

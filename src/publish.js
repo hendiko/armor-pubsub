@@ -2,7 +2,7 @@
  * @Author: Xavier Yin 
  * @Date: 2018-08-09 15:13:42 
  * @Last Modified by: Xavier Yin
- * @Last Modified time: 2018-08-13 11:15:48
+ * @Last Modified time: 2018-08-13 16:12:11
  */
 
 import { safeNs, safeTopic, isEmptyArray, queue } from "./utils";
@@ -20,7 +20,7 @@ function pubAsync(subscribing, content) {
   });
 }
 
-function publishApi(topic, content, options, done) {
+function publishApi(topic, content, options) {
   let { ns, sync } = options || {};
   ns = safeNs(ns);
   topic = safeTopic(topic);
@@ -47,8 +47,6 @@ function publishApi(topic, content, options, done) {
   for (let i = 0; i < onces.length; i++) {
     unsubscribeById(onces[i]["id"]);
   }
-
-  done();
 }
 
 export default function publish(topic, content, options) {
