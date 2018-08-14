@@ -2,10 +2,10 @@
  * @Author: Xavier Yin 
  * @Date: 2018-08-09 18:08:26 
  * @Last Modified by: Xavier Yin
- * @Last Modified time: 2018-08-10 16:23:38
+ * @Last Modified time: 2018-08-13 16:12:33
  */
 
-import { queue, safeTopic, isEmptyArray } from "./utils";
+import { queue, isEmptyArray } from "./utils";
 import { book, getRegistry, removeRegistry } from "./registry";
 
 function removeSubscribingFromRegistry(subscribing) {
@@ -72,9 +72,12 @@ export function unsubscribeById(id) {
 }
 
 export function unsubscribeByIdInQueue(id) {
-  queue({ fn: unsubscribeById, args: [id] });
+  return queue({ fn: unsubscribeById, args: [id] });
 }
 
 export default function unsubscribe(subscriber, topic, callback, options) {
-  queue({ fn: unsubscribeApi, args: [subscriber, topic, callback, options] });
+  return queue({
+    fn: unsubscribeApi,
+    args: [subscriber, topic, callback, options]
+  });
 }

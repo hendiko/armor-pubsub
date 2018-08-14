@@ -2,7 +2,7 @@
  * @Author: Xavier Yin 
  * @Date: 2018-08-09 15:13:42 
  * @Last Modified by: Xavier Yin
- * @Last Modified time: 2018-08-10 11:16:02
+ * @Last Modified time: 2018-08-13 16:12:11
  */
 
 import { safeNs, safeTopic, isEmptyArray, queue } from "./utils";
@@ -50,5 +50,5 @@ function publishApi(topic, content, options) {
 }
 
 export default function publish(topic, content, options) {
-  queue({ fn: publishApi, args: [topic, content, options] });
+  return queue({ fn: publishApi, args: [topic, content, options] });
 }

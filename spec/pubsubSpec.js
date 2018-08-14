@@ -2,7 +2,7 @@
  * @Author: Xavier Yin 
  * @Date: 2018-08-10 14:52:44 
  * @Last Modified by: Xavier Yin
- * @Last Modified time: 2018-08-10 16:54:02
+ * @Last Modified time: 2018-08-13 15:42:14
  */
 import PubSub from "armor-pubsub";
 
@@ -183,5 +183,58 @@ describe("Armor-pubsub test cases.", () => {
       expect(m).toBe(10); // 证明最终值为 10
       done();
     }, 1000);
+  });
+
+  it("[promise] Get promise when embedding publish/subscribe", done => {
+    let m = 0; // 计步器
+    let p1, p2, p3, p4; // Promises
+
+    // 订阅主题 x
+    foo.sub("x", () => {
+      // 在第一次队列循环中，发布主题 y，
+      // 本次发布操作被压入本次队列循环，等待执行。
+      // 获取本次队列循环的完结 PromiseA
+      p2 = foo.pub("y", null, { sync: true });
+      p2.then(() => {
+        expect(++m).toBe(4);
+      });
+      p4 = foo.pub("z");
+      expect(p2).toBe(p4);
+      expect(++m).toBe(1);
+    });
+
+    // 订阅主题 y，同时保留取消订阅函数
+    let promiseToDestroy = foo.sub("y", () => {
+      expect(++m).toBe(2);
+    });
+
+    // 订阅主题 z
+    foo.sub("z", () => {
+      // 因为 z 是异步发布，本回调函数处于 macro-task 事件循环中
+      // 所以本回调函数是最后被调用。
+      expect(++m).toBe(7);
+      done();
+    });
+
+    expect(p2).toBeUndefined(); // 此时 p2 仍然是 undefined
+    // 发布主题 x，得到本次队列完结 PromiseA。
+    p1 = foo.pub("x", void 0, { sync: true });
+    p1.then(() => {
+      expect(++m).toBe(5);
+    });
+    // 此时 p2 已被赋值 PromiseA
+    expect(p2 === void 0).toBeFalsy();
+    expect(p1).toBe(p2);
+
+    // 取消订阅主题 y，得到本次队列完结 PromiseB
+    p3 = promiseToDestroy();
+    p3.then(() => {
+      expect(++m).toBe(6);
+    });
+    expect(p3 === p1).toBeFalsy();
+
+    // 同步执行的代码
+    // 此之前的 expect 判断，只有同步发布的x, y 主题
+    expect(++m).toBe(3);
   });
 });

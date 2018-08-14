@@ -2,7 +2,7 @@
  * @Author: Xavier Yin 
  * @Date: 2018-08-09 15:09:07 
  * @Last Modified by: Xavier Yin
- * @Last Modified time: 2018-08-10 16:01:30
+ * @Last Modified time: 2018-08-14 10:39:53
  */
 
 /**
@@ -30,6 +30,7 @@ export function safeNs(ns) {
   return ns == void 0 ? "default" : ns;
 }
 
+// 强制转换合法主题
 export function safeTopic(topic) {
   return topic == void 0 ? "" : topic;
 }
@@ -50,17 +51,30 @@ export function isFunction(obj) {
 export const queue = (function() {
   const _queue = [];
   let isConsuming = false;
+  let promise;
 
   return function(task) {
     _queue.push(task);
-    if (isConsuming) return;
+    if (isConsuming) return promise;
+    let resolve, reject;
+    promise = new Promise((rs, rj) => {
+      resolve = rs;
+      reject = rj;
+    });
     isConsuming = true;
     task = _queue.shift();
-    while (task) {
-      task.fn(...task.args);
-      task = _queue.shift();
+    try {
+      while (task) {
+        task.fn(...task.args);
+        task = _queue.shift();
+      }
+      isConsuming = false;
+      resolve();
+    } catch (e) {
+      isConsuming = false;
+      reject(e);
     }
-    isConsuming = false;
+    return promise;
   };
 })();
 
